@@ -29,14 +29,15 @@ def json_to_markdown(json_data):
       last_end_time = segment['endTime']  # Update last end time for the speaker
     else:
       # Same speaker, add to current paragraph
-      current_paragraph.append(body)
+      if i > 0 and json_data['segments'][i - 1]['body'] == body:  # Check if previous segment has the same word
+        # Don't append if the word is the same, indicating overlap
+        pass
+      else:
+        current_paragraph.append(body)
       last_end_time = segment['endTime']  # Update last end time for the speaker
 
     # Handle overlap: Check if the previous segment's body is the same
-    if i > 0 and speaker != current_speaker and json_data['segments'][i - 1]['body'] == body:
-      current_paragraph.append(body)  # Append to previous speaker
-      current_speaker = json_data['segments'][i - 1]['speaker']  # Update speaker
-      last_end_time = segment['endTime']  # Update last end time for the speaker
+    # (We've already handled this in the "Same speaker" block)
 
   # Add the last paragraph
   if current_paragraph:
