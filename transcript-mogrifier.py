@@ -12,6 +12,7 @@ def json_to_markdown(json_data):
   markdown = ""
   current_speaker = None
   current_paragraph = []
+  last_end_time = 0  # Keep track of last end time for speaker
 
   for i, segment in enumerate(json_data['segments']):
     speaker = segment['speaker']
@@ -22,21 +23,24 @@ def json_to_markdown(json_data):
     if speaker != current_speaker:
       # New speaker, start a new paragraph
       if current_paragraph:
-        markdown += f"{current_speaker}: {current_paragraph}\n\n"
+        markdown += f"{current_speaker} [{format_timestamp(last_end_time)}-{format_timestamp(segment['startTime'])}]: {current_paragraph}\n\n"
       current_speaker = speaker
-      current_paragraph = [f"{start_time}-{end_time} {body}"]
+      current_paragraph = [body]
+      last_end_time = segment['endTime']  # Update last end time for the speaker
     else:
       # Same speaker, add to current paragraph
-      current_paragraph.append(f"{start_time}-{end_time} {body}")
+      current_paragraph.append(body)
+      last_end_time = segment['endTime']  # Update last end time for the speaker
 
     # Handle overlap: Check if the previous segment's body is the same
     if i > 0 and speaker != current_speaker and json_data['segments'][i - 1]['body'] == body:
-      current_paragraph.append(f"{start_time}-{end_time} {body}")  # Append to previous speaker
+      current_paragraph.append(body)  # Append to previous speaker
       current_speaker = json_data['segments'][i - 1]['speaker']  # Update speaker
+      last_end_time = segment['endTime']  # Update last end time for the speaker
 
   # Add the last paragraph
   if current_paragraph:
-    markdown += f"{current_speaker}: {current_paragraph}\n\n"
+    markdown += f"{current_speaker} [{format_timestamp(last_end_time)}-{format_timestamp(segment['endTime'])}]: {current_paragraph}\n\n"
 
   return markdown
 
