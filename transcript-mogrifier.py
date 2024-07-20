@@ -20,10 +20,10 @@ def json_to_markdown(json_data):
     end_time = format_timestamp(segment['endTime'])
     body = segment['body']
 
-    # Handle overlap:
-    if i > 0 and json_data['segments'][i - 1]['body'] == body:  # Check if previous segment has the same word
+    # Handle overlap: 
+    if i > 0 and json_data['segments'][i - 1]['body'] == body:
       # If the previous segment had the same word, skip this one (it's overlapping)
-      continue
+      continue 
 
     if speaker != current_speaker:
       # New speaker, start a new paragraph
