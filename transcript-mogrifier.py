@@ -1,5 +1,7 @@
 import json
 import datetime
+import argparse
+import os
 
 def format_timestamp(timestamp):
   """Formats a timestamp in seconds to HH:MM:SS format."""
@@ -38,10 +40,21 @@ def json_to_markdown(json_data):
 
   return markdown
 
-# Load JSON data from file
-with open("transcript.json", "r") as f:
-  transcript = json.load(f)
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser(description="Convert JSON transcript to Markdown.")
+  parser.add_argument("input_file", help="Path to the JSON transcript file.")
+  args = parser.parse_args()
 
-# Convert to Markdown and print
-markdown_transcript = json_to_markdown(transcript)
-print(markdown_transcript)
+  # Load JSON data from file
+  with open(args.input_file, "r") as f:
+    transcript = json.load(f)
+
+  # Convert to Markdown and print
+  markdown_transcript = json_to_markdown(transcript)
+
+  # Get the basename of the input file and use it for the output file
+  output_file = os.path.splitext(args.input_file)[0] + ".md"
+
+  # Write to the output file
+  with open(output_file, "w") as f:
+    f.write(markdown_transcript)
