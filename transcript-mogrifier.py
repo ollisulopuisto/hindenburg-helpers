@@ -4,8 +4,8 @@ import argparse
 import os
 
 def format_timestamp(timestamp):
-  """Formats a timestamp in seconds to HH:MM:SS format."""
-  return str(datetime.timedelta(seconds=timestamp))
+  """Formats a timestamp in seconds to HH:MM:SS format, rounded to seconds."""
+  return str(datetime.timedelta(seconds=round(timestamp)))
 
 def json_to_markdown(json_data):
   """Converts JSON transcript data to Markdown format."""
@@ -23,7 +23,7 @@ def json_to_markdown(json_data):
     if speaker != current_speaker:
       # New speaker, start a new paragraph
       if current_paragraph:
-        markdown += f"{current_speaker} [{format_timestamp(last_end_time)}-{format_timestamp(segment['startTime'])}]: {current_paragraph}\n\n"
+        markdown += f"{current_speaker} [{format_timestamp(last_end_time)}-{format_timestamp(segment['startTime'])}]: {''.join(current_paragraph)}\n\n"
       current_speaker = speaker
       current_paragraph = [body]
       last_end_time = segment['endTime']  # Update last end time for the speaker
@@ -40,7 +40,7 @@ def json_to_markdown(json_data):
 
   # Add the last paragraph
   if current_paragraph:
-    markdown += f"{current_speaker} [{format_timestamp(last_end_time)}-{format_timestamp(segment['endTime'])}]: {current_paragraph}\n\n"
+    markdown += f"{current_speaker} [{format_timestamp(last_end_time)}-{format_timestamp(segment['endTime'])}]: {''.join(current_paragraph)}\n\n"
 
   return markdown
 
