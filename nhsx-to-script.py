@@ -40,10 +40,10 @@ def generate_transcript(xml_file):
 
     transcript = ""
     current_speaker = None
-    last_word_time = 0.0  # Keep track of the last word's time
+    last_word_time = 0.0  
 
-    # Create a list to store (word_time, speaker_name, word_text) tuples
-    word_data = [] 
+    # Create a dictionary to store words based on a unique (file_id, offset + word_start) key
+    word_dict = {} 
 
     for track in tracks.findall('Track'):
         speaker_name = track.get('Name')
@@ -56,15 +56,16 @@ def generate_transcript(xml_file):
             audio_file = audio_pool.find(f"./File[@Id='{file_id}']")
             transcription = audio_file.find('Transcription')
 
-            # Extract the words within the relevant time range
+            # Extract the words within the relevant time range and store with unique key
             for p in transcription.findall('p'):
                 for word in p.findall('w'):
                     word_start = float(word.get('s'))
-                    word_time = offset + word_start  # Calculate word time within the audio file
-                    if word_time >= offset and word_time < offset + length: 
-                        word_data.append((word_time, speaker_name, word.text)) 
+                    word_key = (file_id, offset + word_start)  # Unique key
+                    if word_start >= offset and word_start < offset + length:
+                        word_dict[word_key] = (offset + word_start, speaker_name, word.text)
 
     # Sort word data by word time
+    word_data = list(word_dict.values())
     word_data.sort(key=lambda x: x[0])
 
     # Generate the transcript from the sorted word data
@@ -76,8 +77,7 @@ def generate_transcript(xml_file):
         transcript += word_text + " "
 
     return transcript
-
-
+    
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python hindenburg_transcript.py <xml_file>")
