@@ -10,6 +10,9 @@ def time_to_seconds(time_str):
     Returns:
         float: Time in seconds.
     """
+    if time_str is None:  # Handle missing time strings
+        return 0.0
+
     parts = time_str.split(':')
     if len(parts) == 2:
         minutes, seconds = map(float, parts)
