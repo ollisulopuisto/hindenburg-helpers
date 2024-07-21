@@ -1,6 +1,24 @@
 import xml.etree.ElementTree as ET
 import sys
 
+def time_to_seconds(time_str):
+    """Converts a time string in the format MM:SS.sss or SS.sss to seconds.
+
+    Args:
+        time_str (str): The time string.
+
+    Returns:
+        float: Time in seconds.
+    """
+    parts = time_str.split(':')
+    if len(parts) == 2:
+        minutes, seconds = map(float, parts)
+        return minutes * 60 + seconds
+    elif len(parts) == 1:
+        return float(parts[0])
+    else:
+        raise ValueError(f"Invalid time string: {time_str}")
+
 def generate_transcript(xml_file):
     """Generates a speaker-labeled transcript with timestamps from a Hindenburg PRO XML file.
 
@@ -24,8 +42,8 @@ def generate_transcript(xml_file):
         speaker_name = track.get('Name')
         for region in track.findall('Region'):
             file_id = region.get('Ref')
-            start_time = float(region.get('Start')) 
-            offset = float(region.get('Offset').split(':')[1])
+            start_time = time_to_seconds(region.get('Start'))  # Convert Start to seconds
+            offset = time_to_seconds(region.get('Offset'))     # Convert Offset to seconds
 
             # Find the corresponding audio file in the pool
             audio_file = audio_pool.find(f"./File[@Id='{file_id}']")
