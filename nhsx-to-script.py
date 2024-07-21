@@ -42,8 +42,9 @@ def generate_transcript(xml_file):
         speaker_name = track.get('Name')
         for region in track.findall('Region'):
             file_id = region.get('Ref')
-            start_time = time_to_seconds(region.get('Start'))  # Convert Start to seconds
-            offset = time_to_seconds(region.get('Offset'))     # Convert Offset to seconds
+            start_time = time_to_seconds(region.get('Start')) 
+            offset = time_to_seconds(region.get('Offset'))    
+            length = time_to_seconds(region.get('Length'))   # Convert Length to seconds
 
             # Find the corresponding audio file in the pool
             audio_file = audio_pool.find(f"./File[@Id='{file_id}']")
@@ -53,7 +54,7 @@ def generate_transcript(xml_file):
             for p in transcription.findall('p'):
                 for word in p.findall('w'):
                     word_start = float(word.get('s'))
-                    if word_start >= offset and word_start < offset + float(region.get('Length')):
+                    if word_start >= offset and word_start < offset + length: 
                         if current_speaker != speaker_name:
                             timestamp = f"[{int(start_time // 60):02d}:{int(start_time % 60):02d}] "
                             transcript += "\n" + timestamp + f"**{speaker_name}:** "
