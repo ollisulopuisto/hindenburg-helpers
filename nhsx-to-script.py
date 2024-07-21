@@ -10,7 +10,7 @@ def time_to_seconds(time_str):
     Returns:
         float: Time in seconds.
     """
-    if time_str is None: 
+    if time_str is None:
         return 0.0
 
     parts = time_str.split(':')
@@ -21,6 +21,7 @@ def time_to_seconds(time_str):
         return float(parts[0])
     else:
         raise ValueError(f"Invalid time string: {time_str}")
+
 
 def generate_transcript(xml_file):
     """Generates a speaker-labeled transcript from a Hindenburg PRO XML file.
@@ -40,15 +41,15 @@ def generate_transcript(xml_file):
 
     transcript = ""
     current_speaker = None
-    last_word_time = 0.0  
 
-    # Create a dictionary to store words based on a unique (file_id, offset + word_start) key
-    word_dict = {} 
+    # Create a list to store (region_start_time, word_start, speaker_name, word_text) tuples
+    word_data = []
 
     for track in tracks.findall('Track'):
         speaker_name = track.get('Name')
         for region in track.findall('Region'):
             file_id = region.get('Ref')
+            region_start_time = time_to_seconds(region.get("Start"))
             offset = time_to_seconds(region.get('Offset'))
             length = time_to_seconds(region.get('Length'))
 
@@ -56,28 +57,28 @@ def generate_transcript(xml_file):
             audio_file = audio_pool.find(f"./File[@Id='{file_id}']")
             transcription = audio_file.find('Transcription')
 
-            # Extract the words within the relevant time range and store with unique key
+            # Extract the words and store with region_start_time
             for p in transcription.findall('p'):
                 for word in p.findall('w'):
                     word_start = float(word.get('s'))
-                    word_key = (file_id, offset + word_start)  # Unique key
                     if word_start >= offset and word_start < offset + length:
-                        word_dict[word_key] = (offset + word_start, speaker_name, word.text)
+                        word_data.append(
+                            (region_start_time, word_start, speaker_name, word.text)
+                        )
 
-    # Sort word data by word time
-    word_data = list(word_dict.values())
-    word_data.sort(key=lambda x: x[0])
+    # Sort by region start time, then word start time
+    word_data.sort(key=lambda x: (x[0], x[1]))
 
     # Generate the transcript from the sorted word data
-    for word_time, speaker_name, word_text in word_data:
+    for region_start_time, word_start, speaker_name, word_text in word_data:
         if current_speaker != speaker_name:
-            timestamp = f"[{int(word_time // 60):02d}:{int(word_time % 60):02d}] "
+            timestamp = f"[{int(region_start_time // 60):02d}:{int(region_start_time % 60):02d}] "
             transcript += "\n" + timestamp + f"**{speaker_name}:** "
             current_speaker = speaker_name
         transcript += word_text + " "
 
     return transcript
-    
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python hindenburg_transcript.py <xml_file>")
