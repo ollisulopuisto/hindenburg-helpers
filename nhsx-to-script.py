@@ -10,7 +10,7 @@ def time_to_seconds(time_str):
     Returns:
         float: Time in seconds.
     """
-    if time_str is None:  # Handle missing time strings
+    if time_str is None: 
         return 0.0
 
     parts = time_str.split(':')
@@ -23,7 +23,7 @@ def time_to_seconds(time_str):
         raise ValueError(f"Invalid time string: {time_str}")
 
 def generate_transcript(xml_file):
-    """Generates a speaker-labeled transcript with timestamps from a Hindenburg PRO XML file.
+    """Generates a speaker-labeled transcript from a Hindenburg PRO XML file.
 
     Args:
         xml_file (str): Path to the Hindenburg PRO XML file.
@@ -40,14 +40,17 @@ def generate_transcript(xml_file):
 
     transcript = ""
     current_speaker = None
+    last_word_time = 0.0  # Keep track of the last word's time
+
+    # Create a list to store (word_time, speaker_name, word_text) tuples
+    word_data = [] 
 
     for track in tracks.findall('Track'):
         speaker_name = track.get('Name')
         for region in track.findall('Region'):
             file_id = region.get('Ref')
-            start_time = time_to_seconds(region.get('Start')) 
-            offset = time_to_seconds(region.get('Offset'))    
-            length = time_to_seconds(region.get('Length'))   # Convert Length to seconds
+            offset = time_to_seconds(region.get('Offset'))
+            length = time_to_seconds(region.get('Length'))
 
             # Find the corresponding audio file in the pool
             audio_file = audio_pool.find(f"./File[@Id='{file_id}']")
@@ -57,12 +60,20 @@ def generate_transcript(xml_file):
             for p in transcription.findall('p'):
                 for word in p.findall('w'):
                     word_start = float(word.get('s'))
-                    if word_start >= offset and word_start < offset + length: 
-                        if current_speaker != speaker_name:
-                            timestamp = f"[{int(start_time // 60):02d}:{int(start_time % 60):02d}] "
-                            transcript += "\n" + timestamp + f"**{speaker_name}:** "
-                            current_speaker = speaker_name 
-                        transcript += word.text + " "
+                    word_time = offset + word_start  # Calculate word time within the audio file
+                    if word_time >= offset and word_time < offset + length: 
+                        word_data.append((word_time, speaker_name, word.text)) 
+
+    # Sort word data by word time
+    word_data.sort(key=lambda x: x[0])
+
+    # Generate the transcript from the sorted word data
+    for word_time, speaker_name, word_text in word_data:
+        if current_speaker != speaker_name:
+            timestamp = f"[{int(word_time // 60):02d}:{int(word_time % 60):02d}] "
+            transcript += "\n" + timestamp + f"**{speaker_name}:** "
+            current_speaker = speaker_name
+        transcript += word_text + " "
 
     return transcript
 
