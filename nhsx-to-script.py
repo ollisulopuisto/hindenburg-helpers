@@ -13,7 +13,7 @@ def time_to_seconds(time_str):
     if time_str is None:
         return 0.0
 
-    parts = time_str.split(':')
+    parts = time_str.split(":")
     if len(parts) == 2:
         minutes, seconds = map(float, parts)
         return minutes * 60 + seconds
@@ -21,7 +21,6 @@ def time_to_seconds(time_str):
         return float(parts[0])
     else:
         raise ValueError(f"Invalid time string: {time_str}")
-
 
 def generate_transcript(xml_file):
     """Generates a speaker-labeled transcript from a Hindenburg PRO XML file.
@@ -36,50 +35,55 @@ def generate_transcript(xml_file):
     tree = ET.parse(xml_file)
     root = tree.getroot()
 
-    audio_pool = root.find('AudioPool')
-    tracks = root.find('Tracks')
+    audio_pool = root.find("AudioPool")
+    tracks = root.find("Tracks")
 
     transcript = ""
-    current_speaker = None
+    current_speaker = tracks.find("Track").get("Name")  # Set initial speaker
 
-    # Create a list to store (region_start_time, word_start, speaker_name, word_text) tuples
-    word_data = []
-
-    for track in tracks.findall('Track'):
-        speaker_name = track.get('Name')
-        for region in track.findall('Region'):
-            file_id = region.get('Ref')
+    for track in tracks.findall("Track"):
+        speaker_name = track.get("Name")
+        for region in track.findall("Region"):
+            file_id = region.get("Ref")
             region_start_time = time_to_seconds(region.get("Start"))
-            offset = time_to_seconds(region.get('Offset'))
-            length = time_to_seconds(region.get('Length'))
+            offset = time_to_seconds(region.get("Offset"))
+            length = time_to_seconds(region.get("Length"))
 
             # Find the corresponding audio file in the pool
             audio_file = audio_pool.find(f"./File[@Id='{file_id}']")
-            transcription = audio_file.find('Transcription')
+            transcription = audio_file.find("Transcription")
 
-            # Extract the words and store with region_start_time
-            for p in transcription.findall('p'):
-                for word in p.findall('w'):
-                    word_start = float(word.get('s'))
-                    if word_start >= offset and word_start < offset + length:
-                        word_data.append(
-                            (region_start_time, word_start, speaker_name, word.text)
-                        )
+            # Extract the relevant portion of the transcription
+            region_text = ""
+            for p in transcription.findall("p"):
+                for word in p.findall("w"):
+                    word_start = time_to_seconds(word.get("s"))
+                    word_end = word_start + time_to_seconds(word.get("l"))
 
-    # Sort by region start time, then word start time
-    word_data.sort(key=lambda x: (x[0], x[1]))
+                    # Check if word (or part of it) is within the region
+                    if (word_start >= offset and word_start < offset + length) or \
+                       (word_end > offset and word_end <= offset + length) or \
+                       (word_start < offset and word_end > offset + length):
+                        region_text += word.text + " "
 
-    # Generate the transcript from the sorted word data
-    for region_start_time, word_start, speaker_name, word_text in word_data:
-        if current_speaker != speaker_name:
+            # Add timestamp and speaker name for each region
             timestamp = f"[{int(region_start_time // 60):02d}:{int(region_start_time % 60):02d}] "
-            transcript += "\n\n" + timestamp + f"**{speaker_name}:** "  # Add extra line break before new speaker
-            current_speaker = speaker_name
-        transcript += word_text + " "
-    transcript += "\n"  # Add a final line break at the end
+            if current_speaker != speaker_name:
+                transcript += "\n\n"  # Add extra line break for new speaker
+                current_speaker = speaker_name
+            transcript += timestamp + f"**{speaker_name}:** " + region_text
 
+    transcript += "\n"
     return transcript
 
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python hindenburg_transcript.py <xml_file>")
+        sys.exit(1)
+
+    xml_filepath = sys.argv[1]
+    transcript = generate_transcript(xml_filepath)
+    print(transcript)
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python hindenburg_transcript.py <xml_file>")
