@@ -1,20 +1,27 @@
-
 import xml.etree.ElementTree as ET
 import sys
+from datetime import datetime
 
 def time_to_seconds(time_str):
     """Converts a time string to seconds."""
     if time_str is None:
         return 0.0
 
-    parts = time_str.split(":")
-    if len(parts) == 2:
-        minutes, seconds = map(float, parts)
-        return minutes * 60 + seconds
-    elif len(parts) == 1:
-        return float(parts[0])
-    else:
-        raise ValueError(f"Invalid time string: {time_str}")
+    formats = ["%H:%M:%S.%f", "%M:%S.%f", "%S.%f"]  # Existing formats
+    for fmt in formats:
+        try:
+            t = datetime.strptime(time_str, fmt)
+            return t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1e6
+        except ValueError:
+            pass 
+
+    # Handle direct seconds format (e.g., "36")
+    try:
+        return float(time_str)
+    except ValueError:
+        pass
+
+    raise ValueError(f"Invalid time string: {time_str}")
 
 def generate_transcript(xml_file):
     """Generates a speaker-labeled transcript."""
@@ -25,7 +32,6 @@ def generate_transcript(xml_file):
     audio_pool = root.find("AudioPool")
     tracks = root.find("Tracks")
 
-    # 1. Collect all regions from all tracks with their data 
     all_regions = []
     for track in tracks.findall("Track"):
         speaker_name = track.get("Name")
@@ -36,13 +42,11 @@ def generate_transcript(xml_file):
             length = time_to_seconds(region.get("Length"))
             all_regions.append((start_time, speaker_name, file_id, offset, length)) 
 
-    # 2. Sort regions by their start time
     all_regions.sort(key=lambda x: x[0]) 
 
-    # 3. Build the transcript, interleaving speakers
     transcript = ""
     current_speaker = None
-    seen_lines = set()  # Keep track of lines we've already added
+    seen_lines = set()  
 
     for start_time, speaker_name, file_id, offset, length in all_regions:
         # Find the corresponding audio file 
@@ -50,21 +54,21 @@ def generate_transcript(xml_file):
         transcription = audio_file.find("Transcription")
 
         region_text = ""
-        for p in transcription.findall("p"):
-            for word in p.findall("w"):
-                word_start = time_to_seconds(word.get("s"))
-                word_end = word_start + time_to_seconds(word.get("l"))
+        if transcription is not None:  # Check for missing transcription 
+            for p in transcription.findall("p"):
+                for word in p.findall("w"):
+                    word_start = time_to_seconds(word.get("s"))
+                    word_end = word_start + time_to_seconds(word.get("l"))
 
-                if (word_start >= offset and word_start < offset + length) or \
-                   (word_end > offset and word_end <= offset + length) or \
-                   (word_start < offset and word_end > offset + length):
-                    region_text += word.text + " "
+                    if (word_start >= offset and word_start < offset + length) or \
+                       (word_end > offset and word_end <= offset + length) or \
+                       (word_start < offset and word_end > offset + length):
+                        region_text += word.text + " "
 
         # Timestamp and speaker name
         timestamp = f"[{int(start_time // 60):02d}:{int(start_time % 60):02d}] "
         line = timestamp + f"**{speaker_name}:** " + region_text.strip()
 
-        # Add line break for new speaker and avoid duplicates
         if line not in seen_lines:
             if current_speaker != speaker_name:
                 transcript += "\n\n" 
