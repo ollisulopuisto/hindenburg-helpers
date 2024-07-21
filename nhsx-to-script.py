@@ -73,9 +73,10 @@ def generate_transcript(xml_file):
     for region_start_time, word_start, speaker_name, word_text in word_data:
         if current_speaker != speaker_name:
             timestamp = f"[{int(region_start_time // 60):02d}:{int(region_start_time % 60):02d}] "
-            transcript += "\n" + timestamp + f"**{speaker_name}:** "
+            transcript += "\n\n" + timestamp + f"**{speaker_name}:** "  # Add extra line break before new speaker
             current_speaker = speaker_name
         transcript += word_text + " "
+    transcript += "\n"  # Add a final line break at the end
 
     return transcript
 
