@@ -1,5 +1,9 @@
 #!/bin/zsh
 
+#
+# BUGFIX: make sure the wav files are unique before moving them!
+#
+
 if [ $# -eq 0 ] ; then
     echo "Please provide a directory path as an argument."
     exit
