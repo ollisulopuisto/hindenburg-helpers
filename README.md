@@ -10,3 +10,8 @@ into a third file.
 # nhsx-to-script
 
 Parse Hindenburg transcripts into a human-readable .md format
+
+# reorder-hindenburg-subdirectories
+
+Meant to help you save space if several projects share the same audio
+files.
