@@ -6,6 +6,10 @@ A collection of tools for modifying Hindenburg projects.
 
 A tool for editing Hindenburg projects. See `spec.md`.
 
+## Silence remover
+
+A tool for muting tracks when they're not active.
+
 ## whisper-subtools
 
 Modify transcripts created by Whisper to be more human-readable
