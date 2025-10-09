@@ -28,3 +28,21 @@ Parse Hindenburg transcripts into a human-readable .md format
 
 Meant to help you save space if several projects share the same audio
 files.
+
+## Litterointi-työkirja (Transcription Notebook)
+
+Tämä on Google Colab -työkirja (`Litterointi_–_Hindenburg_w_whisper-timestamped.ipynb`), joka on suunniteltu audio-tiedostojen litterointiin Hindenburg-projekteja varten.
+
+### Ominaisuudet
+
+- **Tarkka litterointi:** Käyttää `whisper-timestamped`-kirjastoa ja `openai/whisper-large-v3-turbo`-mallia tuottaakseen tarkkoja, sanakohtaisilla aikaleimoilla varustettuja tekstityksiä.
+- **Google Drive -integraatio:** Lukee äänitiedostot Google Driven `whisper/input`-kansiosta ja tallentaa tulokset (`.nhsx`-tiedostot) `whisper/output`-kansioon.
+- **Hindenburg-yhteensopivuus:** Muokkaa olemassa olevia `.nhsx`-projektitiedostoja ja lisää niihin tuotetut litteroinnit.
+- **Nopeutettu käynnistys:** Hyödyntää Google Drivella olevaa välimuistia (`whisper/cache`), mikä nopeuttaa merkittävästi mallien lataamista toistuvilla ajokerroilla.
+
+### Käyttö
+
+1.  Avaa `Litterointi_–_Hindenburg_w_whisper-timestamped.ipynb` Google Colabissa.
+2.  Aseta käsiteltävät äänitiedostot ja Hindenburg-projektisi (`.nhsx`) Google Driven `whisper/input`-kansioon.
+3.  Suorita työkirjan solut ohjeiden mukaan.
+4.  Valmiit, litteroinnit sisältävät `.nhsx`-tiedostot löytyvät `whisper/output`-kansiosta.
