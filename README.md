@@ -1,5 +1,14 @@
 # Hindenburg helpers
 
+> **Suurin osa tästä on siirtynyt.** Litterointi ja hiljaisten kohtien
+> vaimennus tehdään nyt [`ollisulopuisto/podcast`](https://github.com/ollisulopuisto/podcast)in
+> `podcast-magic`illa, joka ajaa Whisperin Macin näytönohjaimella ja lukee
+> `.nhsx`:ää yhdellä testatulla jäsentimellä kuuden käsin kirjoitetun sijaan.
+> Sama repositorio osaa nyt myös **renderöidä istunnon WAViksi ilman
+> Hindenburgia** (`nhsx-render`).
+>
+> Mikä täältä kannattaa siirtää, mikä poistaa ja mikä jättää: **[`MOVE.md`](MOVE.md)**.
+
 A collection of tools for modifying Hindenburg projects.
 
 ## Hindenburg Editor
