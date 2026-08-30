@@ -1,57 +1,23 @@
 # Hindenburg helpers
 
-> **Suurin osa tästä on siirtynyt.** Litterointi ja hiljaisten kohtien
-> vaimennus tehdään nyt [`ollisulopuisto/podcast`](https://github.com/ollisulopuisto/podcast)in
-> `podcast-magic`illa, joka ajaa Whisperin Macin näytönohjaimella ja lukee
-> `.nhsx`:ää yhdellä testatulla jäsentimellä kuuden käsin kirjoitetun sijaan.
-> Sama repositorio osaa nyt myös **renderöidä istunnon WAViksi ilman
-> Hindenburgia** (`nhsx-render`).
+> **Lähes kaikki tästä on siirtynyt.** Istuntoformaattia jäsennetään yhdessä
+> paikassa yhdellä tavalla: [`ollisulopuisto/podcast`](https://github.com/ollisulopuisto/podcast)in
+> `podcast-magic` lukee ja kirjoittaa `.nhsx`:ää yhdellä testatulla
+> jäsentimellä, ja istunnon voi renderöidä WAViksi ilman Hindenburgia.
 >
-> Mikä täältä kannattaa siirtää, mikä poistaa ja mikä jättää: **[`MOVE.md`](MOVE.md)**.
+> | mitä täällä oli | minne se meni |
+> |---|---|
+> | `xml-merge.py` | `podcast-magic`in **Litteroinnin siirto** -moduuli |
+> | `nhsx-to-script.py` | `podcast-magic`in **Käsikirjoitus**-moduuli |
+> | `strip-silence.py`, `vaienna_hiljaiset_kohdat_*.py`, molemmat muistikirjat | poistettu — `podcast-magic`in litterointi ja vaimennus tekevät saman työn mitattuna |
+> | `hindenburg-editor.py` | poistettu — ei koskaan lukenut yhtäkään istuntoa (ks. git-historia) |
+> | `spec.md` | `podcast-magic/docs/hindenburg-session-spec.md` |
+> | `MOVE.md`, `AGENT.md` | poistettu — suoritettu, vanhentunut |
 
-A collection of tools for modifying Hindenburg projects.
+## Jäljellä
 
-## Hindenburg Editor
-
-A tool for editing Hindenburg projects. See `spec.md`.
-
-## Silence remover
-
-A tool for muting tracks when they're not active.
-
-## whisper-subtools
-
-Modify transcripts created by Whisper to be more human-readable
-
-## xml-merge
-
-Combine the transcripts from two Hindenburg .nhsx files and save them
-into a third file. Used to help the user not use edits made into one project
-and merge transcription data from an unedited session with it.
-
-## nhsx-to-script
-
-Parse Hindenburg transcripts into a human-readable .md format
-
-## reorder-hindenburg-subdirectories
-
-Meant to help you save space if several projects share the same audio
-files.
-
-## Litterointi-työkirja (Transcription Notebook)
-
-Tämä on Google Colab -työkirja (`Litterointi_–_Hindenburg_w_whisper-timestamped.ipynb`), joka on suunniteltu audio-tiedostojen litterointiin Hindenburg-projekteja varten.
-
-### Ominaisuudet
-
-- **Tarkka litterointi:** Käyttää `whisper-timestamped`-kirjastoa ja `openai/whisper-large-v3-turbo`-mallia tuottaakseen tarkkoja, sanakohtaisilla aikaleimoilla varustettuja tekstityksiä.
-- **Google Drive -integraatio:** Lukee äänitiedostot Google Driven `whisper/input`-kansiosta ja tallentaa tulokset (`.nhsx`-tiedostot) `whisper/output`-kansioon.
-- **Hindenburg-yhteensopivuus:** Muokkaa olemassa olevia `.nhsx`-projektitiedostoja ja lisää niihin tuotetut litteroinnit.
-- **Nopeutettu käynnistys:** Hyödyntää Google Drivella olevaa välimuistia (`whisper/cache`), mikä nopeuttaa merkittävästi mallien lataamista toistuvilla ajokerroilla.
-
-### Käyttö
-
-1.  Avaa `Litterointi_–_Hindenburg_w_whisper-timestamped.ipynb` Google Colabissa.
-2.  Aseta käsiteltävät äänitiedostot ja Hindenburg-projektisi (`.nhsx`) Google Driven `whisper/input`-kansioon.
-3.  Suorita työkirjan solut ohjeiden mukaan.
-4.  Valmiit, litteroinnit sisältävät `.nhsx`-tiedostot löytyvät `whisper/output`-kansiosta.
+* `reorder-hindenburg-subdirectories.sh` — säästää levytilaa kun projektit
+  jakavat äänitiedostoja. Ei lue istuntoformaattia eikä käsittele ääntä:
+  hakemistojen siivousta, ei istuntoformaattia.
+* `json-to-text.py` — Whisperin JSON-litterointi tekstinä. Poista, jos
+  Whisperin JSONia ei enää synny.
